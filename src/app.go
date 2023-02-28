@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -128,6 +131,19 @@ func getAllMeetup(c echo.Context) error {
 
 // Application entry point
 func main() {
+
+	// Load environment variables
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatalf("Some error occured. Err: %s", err)
+	}
+
+	mongoUri, found := os.LookupEnv("DB_MONGO_URI")
+
+	if found == false {
+		mongoUri = "mongodb://localhost:27017"
+	}
 
 	// Instantiate echo framework
 	e := echo.New()
