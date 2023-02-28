@@ -153,6 +153,9 @@ func main() {
 	e.GET("/meetups/:_id", getSingleMeetup)
 	e.POST("/meetups", createMeetup)
 
+	// Connect to DB
+	meetupModel = mongoDBConnect(mongoUri, "project", "meetup")
+
 	// Start server on port 8080
 	e.Logger.Fatal(e.Start(":8080"))
 }
