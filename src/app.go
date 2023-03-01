@@ -10,6 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -139,6 +140,7 @@ func main() {
 		log.Fatalf("Some error occured. Err: %s", err)
 	}
 
+	apiKey := os.Getenv("API_KEY")
 	mongoUri, found := os.LookupEnv("DB_MONGO_URI")
 
 	if found == false {
@@ -147,6 +149,11 @@ func main() {
 
 	// Instantiate echo framework
 	e := echo.New()
+
+	// Register Middlewares
+	e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
+		return key == apiKey, nil
+	}))
 
 	// Register routes and handlers
 	e.GET("/meetups", getAllMeetup)
