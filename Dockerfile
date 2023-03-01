@@ -23,9 +23,6 @@ FROM gcr.io/distroless/static-debian11
 # Define working directory
 WORKDIR /root/
 
-# Copy .env file from source
-COPY .env ./
-
 # Copy binary file from building stage
 COPY --from=build /app/bin ./
 

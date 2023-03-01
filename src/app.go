@@ -3,12 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"net/http"
 
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.mongodb.org/mongo-driver/bson"
@@ -133,13 +131,7 @@ func getAllMeetup(c echo.Context) error {
 // Application entry point
 func main() {
 
-	// Load environment variables
-	err := godotenv.Load()
-
-	if err != nil {
-		log.Fatalf("Some error occured. Err: %s", err)
-	}
-
+	// Get environment variables
 	apiKey := os.Getenv("API_KEY")
 	mongoUri, found := os.LookupEnv("DB_MONGO_URI")
 
