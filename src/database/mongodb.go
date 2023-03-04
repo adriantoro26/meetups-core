@@ -10,9 +10,7 @@ import (
 
 // description: Open connection to MongoDB database
 // param: uri - MongoDB URI string
-// param: database - Database name
-// param: colleciton - Collection name
-func MongoDBConnect(uri string, database string, collection string) *mongo.Collection {
+func MongoDBConnect(uri string) *mongo.Client {
 
 	// Use the SetServerAPIOptions() method to set the Stable API version to 1
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
@@ -30,6 +28,15 @@ func MongoDBConnect(uri string, database string, collection string) *mongo.Colle
 		panic(err)
 	}
 
+	return client
+}
+
+// description: Get acess to mongo collection
+// param: database - Database name
+// param: colleciton - Collection name
+func GetMongoCollection(client *mongo.Client, database string, collection string) *mongo.Collection {
+
+	// Get collection
 	model := client.Database(database).Collection(collection)
 
 	return model

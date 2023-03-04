@@ -2,16 +2,15 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 
-	"net/http"
-
 	"github.com/adriantoro26/meetups-core/src/database/mongodb"
+	meetupControllers "github.com/adriantoro26/meetups-core/src/meetups/controllers"
+	meetupRoutes "github.com/adriantoro26/meetups-core/src/meetups/routes"
+	meetupServices "github.com/adriantoro26/meetups-core/src/meetups/services"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -32,76 +31,35 @@ type Response struct {
 }
 
 // Global variables
-var meetupModel *mongo.Collection
+var (
+	mongoClient             *mongo.Client
+	meetupModel             *mongo.Collection
+	meetupController        meetupControllers.MeetupController
+	meetupRoute             meetupRoutes.MeetupRoutes
+	meetupService           meetupServices.MeetupService
+	meetupServiceDefinition meetupServices.MeetupServiceDefinition
+)
 
-// Route handlers
+func init() {
+	// Initialize package dependencies
 
-// description: Creates a new meetup
-func createMeetup(c echo.Context) error {
-	fmt.Println("Meetup created")
+	// Get env variables
+	mongoUri, found := os.LookupEnv("DB_MONGO_URI")
 
-	meetup := &Meetup{}
-
-	// Get request body
-	if err := c.Bind(meetup); err != nil {
-		return err
+	if found == false {
+		mongoUri = "mongodb://localhost:27017"
 	}
 
-	// Create meetup document
-	response, err := meetupModel.InsertOne(context.TODO(), meetup)
+	// Connect to MongoDB database
+	mongoClient = mongodb.MongoDBConnect(mongoUri)
 
-	if err != nil {
-		response := &Response{"500", "Internal Server Error"}
-		return c.JSON(http.StatusInternalServerError, response)
-	}
+	// Get Meetup collection
+	meetupModel = mongodb.GetMongoCollection(mongoClient, "project", "meetup")
 
-	// Get created document
-	meetupModel.FindOne(context.TODO(), bson.D{{"_id", response.InsertedID}}).Decode(&meetup)
-
-	return c.JSON(http.StatusCreated, meetup)
-}
-
-// description: Get single meetup
-func getSingleMeetup(c echo.Context) error {
-	fmt.Println("Single meetup returned")
-
-	// Get param id
-	id := c.Param("_id")
-
-	// Convert to mongoID
-	_id, _ := primitive.ObjectIDFromHex(id)
-
-	// Find meeetup
-	var meetup Meetup
-	err := meetupModel.FindOne(context.TODO(), bson.D{{"_id", _id}}).Decode(&meetup)
-
-	// Return error message if meetup is not found
-	if err == mongo.ErrNoDocuments {
-		response := &Response{"404", fmt.Sprintf("No meetup found with given id: %s\n", id)}
-		return c.JSON(http.StatusNotFound, response)
-	}
-
-	return c.JSON(http.StatusOK, meetup)
-}
-
-// description: Get all meetups
-func getAllMeetup(c echo.Context) error {
-	fmt.Println("All meetups returned")
-
-	// Find all meetups
-	var meetups []Meetup
-	cursor, err := meetupModel.Find(context.TODO(), bson.D{})
-
-	err = cursor.All(context.TODO(), &meetups)
-
-	// Return error message if meetup is not found
-
-	if err != nil {
-		response := &Response{"500", "Internal Server Error"}
-		return c.JSON(http.StatusInternalServerError, response)
-	}
-
-	return c.JSON(http.StatusOK, meetups)
+	// Initialize controllers
+	meetupService = meetupServiceDefinition.Constructor(meetupModel)
+	meetupController.Service = meetupService
+	meetupRoute.Constructor(&meetupController)
 }
 
 // Application entry point
@@ -109,11 +67,8 @@ func main() {
 
 	// Get environment variables
 	apiKey := os.Getenv("API_KEY")
-	mongoUri, found := os.LookupEnv("DB_MONGO_URI")
 
-	if found == false {
-		mongoUri = "mongodb://localhost:27017"
-	}
+	defer mongoClient.Disconnect(context.TODO())
 
 	// Instantiate echo framework
 	e := echo.New()
@@ -124,12 +79,7 @@ func main() {
 	}))
 
 	// Register routes and handlers
-	e.GET("/meetups", getAllMeetup)
-	e.GET("/meetups/:_id", getSingleMeetup)
-	e.POST("/meetups", createMeetup)
-
-	// Connect to DB
-	meetupModel = mongodb.MongoDBConnect(mongoUri, "project", "meetup")
+	meetupRoute.RegisterRoutes(e)
 
 	// Start server on port 8080
 	e.Logger.Fatal(e.Start(":8080"))
