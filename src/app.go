@@ -4,31 +4,15 @@ import (
 	"context"
 	"os"
 
-	"github.com/adriantoro26/meetups-core/src/database/mongodb"
+	"github.com/adriantoro26/meetups-core/src/database"
 	meetupControllers "github.com/adriantoro26/meetups-core/src/meetups/controllers"
 	meetupRoutes "github.com/adriantoro26/meetups-core/src/meetups/routes"
 	meetupServices "github.com/adriantoro26/meetups-core/src/meetups/services"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// Meetup schema
-type Meetup struct {
-	Id          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	Title       string             `json:"title" bson:"title" binding:"required"`
-	Description string             `json:"description" bson:"description" binding:"required"`
-	Image       string             `json:"image,omitempty" bson:"image" binding:"required"`
-	Address     string             `json:"address" bson:"address" binding:"required"`
-}
-
-// Custom types
-type Response struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
 
 // Global variables
 var (
@@ -51,10 +35,10 @@ func init() {
 	}
 
 	// Connect to MongoDB database
-	mongoClient = mongodb.MongoDBConnect(mongoUri)
+	mongoClient = database.MongoDBConnect(mongoUri)
 
 	// Get Meetup collection
-	meetupModel = mongodb.GetMongoCollection(mongoClient, "project", "meetup")
+	meetupModel = database.GetMongoCollection(mongoClient, "project", "meetup")
 
 	// Initialize controllers
 	meetupService = meetupServiceDefinition.Constructor(meetupModel)

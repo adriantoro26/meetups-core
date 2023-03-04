@@ -3,7 +3,6 @@ module github.com/adriantoro26/meetups-core
 go 1.20
 
 require (
-	github.com/adriantoro26/meetups-core/src/database/mongodb v0.0.0-00010101000000-000000000000
 	github.com/labstack/echo/v4 v4.10.2
 	go.mongodb.org/mongo-driver v1.11.2
 )
@@ -30,5 +29,3 @@ require (
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )
-
-replace github.com/adriantoro26/meetups-core/src/database/mongodb => ./src/database
