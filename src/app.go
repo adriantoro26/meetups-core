@@ -5,9 +5,8 @@ import (
 	"os"
 
 	"github.com/adriantoro26/meetups-core/src/database"
-	meetupControllers "github.com/adriantoro26/meetups-core/src/meetups/controllers"
+	"github.com/adriantoro26/meetups-core/src/meetups"
 	meetupRoutes "github.com/adriantoro26/meetups-core/src/meetups/routes"
-	meetupServices "github.com/adriantoro26/meetups-core/src/meetups/services"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -16,16 +15,12 @@ import (
 
 // Global variables
 var (
-	mongoClient             *mongo.Client
-	meetupModel             *mongo.Collection
-	meetupController        meetupControllers.MeetupController
-	meetupRoute             meetupRoutes.MeetupRoutes
-	meetupService           meetupServices.MeetupService
-	meetupServiceDefinition meetupServices.MeetupServiceDefinition
+	mongoClient *mongo.Client
+	meetupRoute *meetupRoutes.MeetupRoutes
 )
 
 func init() {
-	// Initialize package dependencies
+	// Initialize modules
 
 	// Get env variables
 	mongoUri, found := os.LookupEnv("DB_MONGO_URI")
@@ -37,13 +32,8 @@ func init() {
 	// Connect to MongoDB database
 	mongoClient = database.MongoDBConnect(mongoUri)
 
-	// Get Meetup collection
-	meetupModel = database.GetMongoCollection(mongoClient, "project", "meetup")
-
-	// Initialize controllers
-	meetupService = meetupServiceDefinition.Constructor(meetupModel)
-	meetupController.Service = meetupService
-	meetupRoute.Constructor(&meetupController)
+	// Initialize meetups module
+	meetupRoute = meetups.Init(mongoClient)
 }
 
 // Application entry point

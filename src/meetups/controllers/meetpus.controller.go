@@ -17,7 +17,11 @@ type Response struct {
 }
 
 type MeetupController struct {
-	Service services.MeetupService
+	service services.MeetupService
+}
+
+func New(service services.MeetupService) *MeetupController {
+	return &MeetupController{service}
 }
 
 // description: Creates a new meetup
@@ -31,7 +35,7 @@ func (controller MeetupController) Create(c echo.Context) error {
 	}
 
 	// Create meetup document
-	meetup, err := controller.Service.Create(meetup)
+	meetup, err := controller.service.Create(meetup)
 
 	if err != nil {
 		response := &Response{"500", "Internal Server Error"}
@@ -48,7 +52,7 @@ func (controller MeetupController) Single(c echo.Context) error {
 	_id := c.Param("_id")
 
 	// Find meeetup
-	meetup, err := controller.Service.Single(_id)
+	meetup, err := controller.service.Single(_id)
 
 	// Return error message if meetup is not found
 	if err != nil {
@@ -63,7 +67,7 @@ func (controller MeetupController) Single(c echo.Context) error {
 func (controller MeetupController) All(c echo.Context) error {
 
 	// Find all meetups
-	meetups, err := controller.Service.All()
+	meetups, err := controller.service.All()
 
 	// Return error message if meetup is not found
 

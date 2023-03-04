@@ -14,10 +14,8 @@ type MeetupServiceDefinition struct {
 	initialize bool
 }
 
-func (service *MeetupServiceDefinition) Constructor(collection *mongo.Collection) *MeetupServiceDefinition {
-	service.collection = collection
-	service.initialize = true
-	return service
+func New(collection *mongo.Collection) *MeetupServiceDefinition {
+	return &MeetupServiceDefinition{collection, true}
 }
 
 func (service *MeetupServiceDefinition) Create(meetup *models.Meetup) (*models.Meetup, error) {

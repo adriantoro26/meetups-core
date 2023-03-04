@@ -9,8 +9,8 @@ type MeetupRoutes struct {
 	meetupController *controllers.MeetupController
 }
 
-func (p *MeetupRoutes) Constructor(meetupController *controllers.MeetupController) {
-	p.meetupController = meetupController
+func New(meetupController *controllers.MeetupController) *MeetupRoutes {
+	return &MeetupRoutes{meetupController}
 }
 
 func (p *MeetupRoutes) RegisterRoutes(e *echo.Echo) {
