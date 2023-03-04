@@ -7,15 +7,13 @@ FROM golang:1.20 as build
 WORKDIR /app
 
 # Copy files used for compiling the project
-COPY src .
-COPY go.mod .
-COPY go.sum .
+COPY . .
 
 # Download dependencies from go.mod and go.sum
 RUN go mod download
 
 # Build source with CGO_ENABLED=0 to enable statically linked binaries to make the application more portable
-RUN CGO_ENABLED=0 go build -o bin
+RUN CGO_ENABLED=0 go build -o bin src/app.go
 
 ## Deployment stage
 FROM gcr.io/distroless/static-debian11
